@@ -28,23 +28,46 @@ input{font:inherit;font-size:18px;color:var(--tx);background:var(--s2);border:1p
 input:focus{border-color:var(--ac)}
 svg.i{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
-/* struttura: barra con 3 pulsanti + contenuto */
-.app{position:fixed;inset:0;display:grid;grid-template-columns:calc(96px + var(--sal)) 1fr}
-.dock{background:var(--s1);border-right:1px solid var(--line);padding:calc(10px + var(--sat)) 10px calc(10px + var(--sab)) calc(10px + var(--sal));display:flex;flex-direction:column;gap:8px}
-.dock .clock{font-weight:700;font-size:22px;text-align:center;padding:4px 0 10px;font-variant-numeric:tabular-nums}
-.dock button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex:1;max-height:110px;border-radius:20px;color:var(--mu);font-size:13px;font-weight:700}
-.dock button svg.i{width:32px;height:32px}
-.dock button.on{background:var(--s3);color:var(--tx)}
-main{position:relative;overflow:hidden}
-.view{position:absolute;inset:0;padding:calc(16px + var(--sat)) calc(16px + var(--sar)) calc(16px + var(--sab)) 16px;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch}
+/* struttura: una sola schermata (mappa + musica), impostazioni a parte */
+.app{position:fixed;inset:0}
+main{position:absolute;inset:0;overflow:hidden}
+.view{position:absolute;inset:0;padding:calc(16px + var(--sat)) calc(16px + var(--sar)) calc(16px + var(--sab)) calc(16px + var(--sal));overflow-y:auto;display:none;-webkit-overflow-scrolling:touch}
 .view.on{display:block}
-@media (orientation:portrait){
-  .app{grid-template-columns:1fr;grid-template-rows:1fr calc(78px + var(--sab))}
-  .dock{grid-row:2;flex-direction:row;border-right:0;border-top:1px solid var(--line);padding:8px calc(10px + var(--sar)) calc(8px + var(--sab)) calc(10px + var(--sal))}
-  .dock .clock{display:none}
-  .dock button{max-height:none}
-  main{grid-row:1}
-  .view{padding-left:calc(16px + var(--sal))}
+.clock{font-weight:800;font-size:34px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+#p-browse{display:flex;flex-direction:column;min-height:100%}
+.player{margin-top:auto;padding-top:14px}
+.pcard{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.pcard .np img,.pcard .np .ph{width:64px;height:64px;border-radius:12px}
+.pcard .tt b{font-size:17px}
+.pcard .ctrl{margin-top:12px;gap:12px;justify-content:space-between}
+.pcard .ctrl button{width:56px;height:56px}
+.pcard .ctrl button.pp{width:68px;height:68px}
+.pcard .ctrl .plb{width:auto;height:56px;border-radius:16px;padding:0 16px;font-weight:700;font-size:15px;gap:8px;display:flex;align-items:center;color:#1ed760}
+.pcard .prog{margin-top:12px}
+/* telefono in orizzontale (poco spazio in altezza): tutto più compatto */
+@media (orientation:landscape) and (max-height:520px){
+  .mpanel .head{margin-bottom:8px}
+  .mpanel .clock{font-size:26px}
+  .mpanel .icon-btn{width:44px;height:44px}
+  .search input{padding:12px 14px}
+  .search .btn{padding:12px 16px}
+  .quick{margin-top:10px;gap:8px}
+  .quick .tile{min-height:60px;flex-direction:row;align-items:center;justify-content:flex-start;padding:8px 10px;gap:8px}
+  .quick .tile .ib{width:38px;height:38px;border-radius:12px}
+  .quick .tile .ib svg.i{width:22px;height:22px}
+  .quick .tile b{font-size:15px}
+  .quick .tile span{display:none}
+  #m-recent-wrap{display:none!important}
+  .player{padding-top:10px}
+  .pcard{padding:10px 12px}
+  .pcard .np{gap:12px}
+  .pcard .np img,.pcard .np .ph{width:48px;height:48px;border-radius:10px}
+  .pcard .tt b{font-size:16px}
+  .pcard .prog{margin-top:8px}
+  .pcard .ctrl{margin-top:8px}
+  .pcard .ctrl button{width:48px;height:48px}
+  .pcard .ctrl button.pp{width:58px;height:58px}
+  .pcard .ctrl .plb{height:48px;padding:0 12px}
 }
 
 h1{font-size:40px;font-weight:800;letter-spacing:-.03em}
@@ -80,18 +103,20 @@ h3{font-size:13px;font-weight:700;color:var(--mu);text-transform:uppercase;lette
 /* mappa */
 .view.mapview{padding:0;overflow:hidden}
 .view.mapview.on{display:grid;grid-template-columns:minmax(330px,40%) 1fr}
-.mpanel{grid-column:1;grid-row:1;overflow-y:auto;min-height:0;padding:calc(16px + var(--sat)) 16px calc(16px + var(--sab)) 16px;border-right:1px solid var(--line);-webkit-overflow-scrolling:touch}
+.mpanel{grid-column:1;grid-row:1;overflow-y:auto;min-height:0;padding:calc(14px + var(--sat)) 16px calc(14px + var(--sab)) calc(16px + var(--sal));border-right:1px solid var(--line);-webkit-overflow-scrolling:touch;background:var(--bg)}
 .mapwrap{grid-column:2;grid-row:1;position:relative;min-height:0;overflow:hidden}
 #map{position:absolute;inset:0;background:#0b0f14}
 @media (orientation:portrait){
-  .view.mapview.on{grid-template-columns:1fr;grid-template-rows:46% 1fr}
+  .view.mapview.on{grid-template-columns:1fr;grid-template-rows:40% 1fr}
   .mapwrap{grid-column:1;grid-row:1}
-  .mpanel{grid-row:2;border-right:0;border-top:1px solid var(--line);padding-top:16px;padding-left:calc(16px + var(--sal))}
+  .mpanel{grid-row:2;border-right:0;border-top:1px solid var(--line);padding:12px calc(16px + var(--sar)) calc(14px + var(--sab)) calc(16px + var(--sal))}
+  .mpanel .clock{font-size:26px}
+  .mpanel .head{margin-bottom:10px}
 }
 .search{display:flex;gap:10px}
 .search input{flex:1;min-width:0}
 .quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
-.quick .tile{min-height:104px;padding:14px}
+.quick .tile{min-height:88px;padding:12px}
 .quick .tile b{font-size:17px}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
 .chip{padding:12px 15px;border-radius:14px;background:var(--s2);border:1px solid var(--line);font-size:15px;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -169,13 +194,6 @@ h3{font-size:13px;font-weight:700;color:var(--mu);text-transform:uppercase;lette
 </head>
 <body>
 <div class="app">
-  <nav class="dock" id="dock">
-    <div class="clock" id="clock">--:--</div>
-    <button data-act="tab" data-arg="maps" class="on"><svg class="i" viewBox="0 0 24 24" data-i="nav"></svg>Mappa</button>
-    <button data-act="tab" data-arg="music"><svg class="i" viewBox="0 0 24 24" data-i="music"></svg>Musica</button>
-    <button data-act="tab" data-arg="phone"><svg class="i" viewBox="0 0 24 24" data-i="phone"></svg>Telefono</button>
-  </nav>
-
   <main>
     <!-- MAPPA -->
     <section class="view mapview on" id="v-maps">
@@ -186,13 +204,14 @@ h3{font-size:13px;font-weight:700;color:var(--mu);text-transform:uppercase;lette
       </div>
       <div class="mpanel" id="mpanel">
         <div id="p-browse">
-          <div class="head"><h2>Dove andiamo?</h2><button class="icon-btn" data-act="tab" data-arg="settings" aria-label="Impostazioni"><svg class="i" viewBox="0 0 24 24" data-i="settings"></svg></button></div>
+          <div class="head"><div class="clock" id="clock">--:--</div><button class="icon-btn" data-act="tab" data-arg="settings" aria-label="Impostazioni"><svg class="i" viewBox="0 0 24 24" data-i="settings"></svg></button></div>
           <form class="search" id="qform" autocomplete="off">
             <input id="q" type="search" placeholder="Cerca un posto" enterkeyhint="search">
             <button class="btn" type="submit" aria-label="Cerca"><svg class="i" viewBox="0 0 24 24" data-i="search"></svg></button>
           </form>
           <div class="quick" id="quick"></div>
           <div id="m-recent-wrap"><h3>Recenti</h3><div class="chips" id="m-recent"></div></div>
+          <div class="player" id="b-player"></div>
         </div>
         <div id="p-results" hidden>
           <div class="head"><h2 id="r-title">Risultati</h2><button class="btn ghost" data-act="back">Indietro</button></div>
@@ -213,10 +232,7 @@ h3{font-size:13px;font-weight:700;color:var(--mu);text-transform:uppercase;lette
             <div><b id="n-rem">--</b><span>mancano</span></div>
             <div><b id="n-km">--</b><span>distanza</span></div>
           </div>
-          <div class="actions">
-            <button class="btn stops" data-act="stops">Aree di servizio</button>
-            <button class="btn ghost" data-act="dict" id="n-dict" style="color:#25d366"></button>
-          </div>
+          <button class="btn stops w" data-act="stops" style="margin-top:10px">Aree di servizio sul percorso</button>
           <div id="n-player"></div>
           <div class="actions">
             <button class="btn ghost" data-act="voice" id="n-voice"></button>
@@ -224,19 +240,6 @@ h3{font-size:13px;font-weight:700;color:var(--mu);text-transform:uppercase;lette
           </div>
         </div>
       </div>
-    </section>
-
-    <!-- MUSICA -->
-    <section class="view" id="v-music">
-      <div class="head"><h2>Musica</h2></div>
-      <div id="sp-box"></div>
-      <div id="sp-pl-wrap" hidden><h3>Le tue playlist</h3><div class="pls" id="sp-pl"></div></div>
-    </section>
-
-    <!-- TELEFONO -->
-    <section class="view" id="v-phone">
-      <div class="head"><h2>Telefono</h2></div>
-      <div class="tiles" id="ph-tiles"></div>
     </section>
 
     <!-- IMPOSTAZIONI -->
@@ -320,21 +323,17 @@ let toastT;function toast(t,ms=2600){const el=$('#toast');el.textContent=t;el.cl
 const tile=t=>`<button class="tile${t.cls?' '+t.cls:''}" style="--c:${t.c||'var(--ac)'}" data-act="${t.a}" data-arg="${esc(t.g??'')}"><div class="ib">${ic(t.i)}</div><div><b>${esc(t.b)}</b><span>${esc(t.s||'')}</span></div></button>`;
 
 /* ---------- dati salvati (solo su questo telefono) ---------- */
-const DEF={home:'',work:'',workName:'',voiceTo:'Maddy',contacts:[],recent:[],geo:{},navDest:null,voice:true};
+const DEF={home:'',work:'',workName:'',recent:[],geo:{},navDest:null,voice:true};
 const S=(()=>{try{return {...DEF,...JSON.parse(localStorage.getItem('strada.cfg')||'{}')}}catch(e){return {...DEF}}})();
 const save=()=>{try{localStorage.setItem('strada.cfg',JSON.stringify(S))}catch(e){}};
-const MSGS=['Sto arrivando','Arrivo tra circa 15 minuti',"C'è traffico, arrivo un po' in ritardo",'Sono arrivato!','Ecco dove sono: {posizione}'];
 
-/* ---------- schermate ---------- */
+/* ---------- schermate: mappa (con musica) e impostazioni ---------- */
 let view='maps';
 function show(v){
   view=v;
   document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+v));
-  document.querySelectorAll('#dock button').forEach(b=>b.classList.toggle('on',b.dataset.arg===v));
-  if(v==='settings')renderSettings();
+  if(v==='settings'){renderSettings();$('#v-settings').scrollTop=0}
   if(v==='maps'){initMap();setTimeout(()=>{if(map){map.resize();updateCar(true)}},60)}
-  if(v==='music'){spLoadPlaylists();spPoll()}
-  if(v!=='maps')$('#v-'+v).scrollTop=0;
 }
 function renderMaps(){
   $('#quick').innerHTML=[
@@ -342,39 +341,25 @@ function renderMaps(){
     S.work?{a:'nav',g:'work',i:'pin',b:S.workName||'Preferito',c:'#ff4fd8'}:{a:'tab',g:'settings',i:'pin',b:S.workName||'Preferito',s:'Imposta',c:'#ff4fd8'},
     {a:'fuel',i:'fuel',b:'Benzina',c:'#ffb21e'}
   ].map(tile).join('');
-  $('#n-dict').innerHTML=`${ic('mic')}${esc(S.voiceTo||'Maddy')}`;
   $('#m-recent-wrap').hidden=!S.recent.length;
-  $('#m-recent').innerHTML=S.recent.map((r,i)=>`<button class="chip" data-act="recent" data-arg="${i}">${esc(r)}</button>`).join('');
+  $('#m-recent').innerHTML=S.recent.slice(0,3).map((r,i)=>`<button class="chip" data-act="recent" data-arg="${i}">${esc(r)}</button>`).join('');
 }
-function renderPhone(){
-  const t=S.contacts.filter(x=>x.p).map(x=>tile({a:'contact',g:S.contacts.indexOf(x),i:'phone',b:x.n||x.p,s:x.p,c:'#2fd170'}));
-  if(!t.length)t.push(`<div class="empty"><b>Aggiungi le persone che chiami di più</b><button class="btn" data-act="tab" data-arg="settings">Aggiungi contatti</button></div>`);
-  t.unshift(tile({a:'dict',i:'mic',b:`Scrivi a ${S.voiceTo||'Maddy'}`,s:'Detti e invii su WhatsApp',c:'#25d366'}));
-  t.push(tile({a:'wa',i:'msg',b:'WhatsApp',s:'Apri le chat',c:'#25d366'}));
-  $('#ph-tiles').innerHTML=t.join('');
-}
-function renderAll(){renderMaps();renderPhone();renderSpotify()}
+function renderAll(){renderMaps();renderPlayers()}
 
 /* ---------- impostazioni ---------- */
 function renderSettings(){
   $('#set-body').innerHTML=`
   <label class="fld"><span>Indirizzo di casa</span><input data-k="home" value="${esc(S.home)}" placeholder="Via Roma 1, Milano"></label>
   <div class="lrow" style="margin-bottom:12px"><label class="fld" style="flex:1;margin:0"><span>Secondo posto: nome</span><input data-k="workName" value="${esc(S.workName)}" placeholder="Es. Varese"></label><label class="fld" style="flex:2;margin:0"><span>Indirizzo</span><input data-k="work" value="${esc(S.work)}" placeholder="Via Mirabello 25, Varese"></label></div>
-  <label class="fld"><span>Messaggio a voce: a chi scrivi di più</span><input data-k="voiceTo" value="${esc(S.voiceTo)}" placeholder="Maddy"></label>
-  <p class="note" style="margin-bottom:6px">Il pulsante «Scrivi a ${esc(S.voiceTo||'Maddy')}» avvia il comando rapido con lo stesso nome nell'app Comandi.</p>
-  <h3>Contatti</h3>
-  ${S.contacts.map((c,i)=>`<div class="lrow"><input data-c="${i}" data-f="n" placeholder="Nome" value="${esc(c.n||'')}"><input data-c="${i}" data-f="p" type="tel" placeholder="Numero" value="${esc(c.p||'')}"><button class="del" data-act="delC" data-arg="${i}" aria-label="Elimina">${ic('x')}</button></div>`).join('')}
-  <button class="add" data-act="addC">+ Aggiungi contatto</button>
   <h3>Spotify</h3>
   <div class="card row">${SPT?`<span class="note">Collegato</span><button class="btn ghost" data-act="spLogout">Scollega</button>`:`<span class="note">Non collegato</span><button class="btn green" data-act="spLogin">Collega</button>`}</div>
   <p class="note" style="margin-top:18px">I tuoi dati restano solo su questo telefono.</p>`;
 }
 document.addEventListener('input',e=>{
   const el=e.target;
-  if(el.dataset.k){S[el.dataset.k]=el.value.trim()}
-  else if(el.dataset.c){S.contacts[+el.dataset.c][el.dataset.f]=el.value.trim()}
-  else return;
-  save();renderMaps();renderPhone();
+  if(!el.dataset.k)return;
+  S[el.dataset.k]=el.value.trim();
+  save();renderMaps();
 });
 
 /* ---------- azioni ---------- */
@@ -396,39 +381,14 @@ const A={
   navEnd(){navEnd(true)},
   voice(){S.voice=!S.voice;save();renderVoice();if(S.voice)say('Voce attiva')},
   recenter(){follow=true;updateCar(true)},
-  wa:()=>open('whatsapp://'),
-  // avvia il Comando Rapido "Scrivi a …" creato una volta nell'app Comandi
-  dict(){
-    if(!IOS){toast('Funziona solo su iPhone, con il comando rapido «Scrivi a '+(S.voiceTo||'Maddy')+'»',4000);return}
-    open('shortcuts://run-shortcut?name='+enc('Scrivi a '+(S.voiceTo||'Maddy')));
-  },
-  call:n=>open('tel:'+String(n).replace(/[^\d+]/g,'')),
-  contact(i){
-    const c=S.contacts[+i];if(!c)return;
-    sheet(c.n||c.p,`
-      <div class="tiles">
-        ${tile({a:'callC',g:i,i:'phone',b:'Chiama',s:c.p,c:'#2fd170'})}
-        ${tile({a:'waC',g:i,i:'msg',b:'WhatsApp',s:'Apri la chat',c:'#25d366'})}
-      </div>
-      <h3>Messaggio veloce</h3>
-      <div class="list">${MSGS.map((m,j)=>`<button data-act="qmsg" data-arg="${i}:${j}">${ic('send')}<span>${esc(m.replace('{posizione}','[la tua posizione]'))}</span></button>`).join('')}</div>`);
-  },
-  callC(i){closeSheet();A.call(S.contacts[+i].p)},
-  waC(i){closeSheet();open('whatsapp://send?phone='+waNum(S.contacts[+i].p))},
-  qmsg(a){
-    const [i,j]=a.split(':').map(Number),c=S.contacts[i];let txt=MSGS[j];if(!c)return;
-    if(txt.includes('{posizione}')){if(G.lat==null){toast('Aspetto il GPS, riprova tra poco');return}txt=txt.replace('{posizione}',`https://maps.google.com/?q=${G.lat.toFixed(6)},${G.lon.toFixed(6)}`)}
-    closeSheet();open(`whatsapp://send?phone=${waNum(c.p)}&text=${enc(txt)}`);
-  },
-  addC(){S.contacts.push({});save();renderSettings();const r=document.querySelectorAll('[data-c][data-f="n"]');r[r.length-1]?.focus()},
-  delC(i){S.contacts.splice(+i,1);save();renderSettings();renderPhone()},
   spLogin(){spLogin()},
+  spLists(){openPlaylists()},
   spLogout(){SPT=null;spSave();NP=null;PLS=null;renderAll();renderSettings()},
   spOpen:()=>open('spotify:'),
   spPP(){spCmd(NP?.playing?'pause':'play')},
   spNext(){spCmd('next')},
   spPrev(){spCmd('prev')},
-  spPl(i){const p=PLS?.[+i];if(p)spCmd('play',{context_uri:p.uri})},
+  spPl(i){const p=PLS?.[+i];if(p){closeSheet();spCmd('play',{context_uri:p.uri})}},
   closeSheet:(g,el,e)=>{if(g==='bg'&&e.target!==el)return;closeSheet()}
 };
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const f=A[el.dataset.act];if(f)f(el.dataset.arg,el,e)});
@@ -745,7 +705,7 @@ async function spCallback(){
   let saved={};try{saved=JSON.parse(localStorage.getItem('strada.spv')||'{}')}catch(e){}
   history.replaceState(null,'',spRedirect());
   if(q.get('error')||q.get('state')!==saved.st){toast('Collegamento a Spotify annullato');return}
-  try{await spToken({grant_type:'authorization_code',code:q.get('code'),redirect_uri:spRedirect(),code_verifier:saved.v});localStorage.removeItem('strada.spv');toast('Spotify collegato!');renderAll();spPoll();spLoadPlaylists();show('music')}
+  try{await spToken({grant_type:'authorization_code',code:q.get('code'),redirect_uri:spRedirect(),code_verifier:saved.v});localStorage.removeItem('strada.spv');toast('Spotify collegato!');renderAll();spPoll();spLoadPlaylists()}
   catch(e){toast('Collegamento a Spotify non riuscito, riprova')}
 }
 async function sp(path,opt={}){
@@ -773,7 +733,7 @@ async function spPoll(){
 async function spLoadPlaylists(){
   if(!SPT||plLoading||PLS)return;
   plLoading=true;
-  try{const j=await sp('/me/playlists?limit=50');if(j?.items){PLS=j.items.filter(Boolean).map(p=>({name:p.name,uri:p.uri,img:(p.images||[])[0]?.url||''}));renderSpotify()}}catch(e){}
+  try{const j=await sp('/me/playlists?limit=50');if(j?.items){PLS=j.items.filter(Boolean).map(p=>({name:p.name,uri:p.uri,img:(p.images||[])[0]?.url||''}))}}catch(e){}
   plLoading=false;
 }
 async function spWake(){
@@ -800,23 +760,24 @@ async function spCmd(kind,body){
 }
 const npImg=()=>NP?.img?`<img src="${esc(NP.img)}" alt="">`:`<div class="ph"></div>`;
 const ctrls=cls=>`<button data-act="spPrev" aria-label="Precedente">${ic('prev')}</button><button class="pp" data-act="spPP" aria-label="Play o pausa">${ic(NP?.playing?'pausef':'playf')}</button><button data-act="spNext" aria-label="Successivo">${ic('next')}</button>`;
-function renderNowbars(){
-  const n=$('#n-player');if(!n)return;
+function progPct(){if(!NP)return 0;return Math.min(100,(NP.prog+(NP.playing?Date.now()-NPat:0))/NP.dur*100)}
+// Lettore nella schermata principale (sotto destinazioni) e barra compatta durante la navigazione
+function renderPlayers(){
+  const b=$('#b-player');
+  if(!SPT){
+    b.innerHTML=`<div class="pcard"><div class="np"><div class="ph" style="display:grid;place-items:center;color:#1ed760">${ic('music')}</div><div class="tt"><b>Spotify</b><span>Collegalo una volta sola</span></div><button class="btn green" data-act="spLogin">Collega</button></div></div>`;
+  }else{
+    b.innerHTML=`<div class="pcard"><div class="np">${npImg()}<div class="tt"><b>${esc(NP?.name||'Niente in riproduzione')}</b><span>${esc(NP?.artist||'Tocca Playlist per scegliere')}</span></div></div><div class="prog"><i style="width:${progPct()}%"></i></div><div class="ctrl"><button class="plb" data-act="spLists">${ic('music')}Playlist</button>${ctrls()}</div></div>`;
+  }
+  const n=$('#n-player');
   n.innerHTML=SPT?`<div class="nowbar">${npImg()}<div class="tt"><b>${esc(NP?.name||'Spotify')}</b><span>${esc(NP?.artist||'In pausa')}</span></div><button class="pp" data-act="spPP" aria-label="Play o pausa">${ic(NP?.playing?'pausef':'playf')}</button><button data-act="spNext" aria-label="Successivo">${ic('next')}</button></div>`:'';
 }
-function progPct(){if(!NP)return 0;return Math.min(100,(NP.prog+(NP.playing?Date.now()-NPat:0))/NP.dur*100)}
-function renderSpotify(){
-  const box=$('#sp-box');
-  if(!SPT){
-    box.innerHTML=`<div class="card"><div class="np"><div class="ph" style="display:grid;place-items:center;color:#1ed760">${ic('music')}</div><div class="tt"><b>Collega Spotify</b><span>Una volta sola, poi comandi la musica da qui</span></div></div><button class="btn green w" style="margin-top:16px" data-act="spLogin">Collega Spotify</button></div>`;
-    $('#sp-pl-wrap').hidden=true;return;
-  }
-  box.innerHTML=`<div class="card"><div class="np">${npImg()}<div class="tt"><b>${esc(NP?.name||'Niente in riproduzione')}</b><span>${esc(NP?.artist||'Scegli una playlist qui sotto')}</span></div></div><div class="prog"><i style="width:${progPct()}%"></i></div><div class="ctrl">${ctrls()}</div></div>`;
-  $('#sp-pl-wrap').hidden=!PLS?.length;
-  const pl=$('#sp-pl');
-  if(PLS&&pl.dataset.n!==String(PLS.length)){pl.dataset.n=PLS.length;pl.innerHTML=PLS.map((p,i)=>`<button class="pl" data-act="spPl" data-arg="${i}">${p.img?`<img src="${esc(p.img)}" alt="" loading="lazy">`:'<div class="ph"></div>'}<b>${esc(p.name)}</b></button>`).join('')}
+const renderNowbars=renderPlayers,renderNP=renderPlayers;
+function plGrid(){return PLS?.length?`<div class="pls">${PLS.map((p,i)=>`<button class="pl" data-act="spPl" data-arg="${i}">${p.img?`<img src="${esc(p.img)}" alt="" loading="lazy">`:'<div class="ph"></div>'}<b>${esc(p.name)}</b></button>`).join('')}</div>`:'<p class="note">Carico le tue playlist…</p>'}
+async function openPlaylists(){
+  sheet('Le tue playlist',plGrid());
+  if(!PLS){await spLoadPlaylists();if($('#sheet').classList.contains('on'))$('#sheet-b').innerHTML=PLS?plGrid():'<p class="note">Non riesco a caricare le playlist, riprova.</p>'}
 }
-function renderNP(){if(view==='music')renderSpotify();renderNowbars()}
 
 /* ---------- schermo sempre acceso ---------- */
 let wl=null,started=false;
