@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Strada">
+<meta name="theme-color" content="#06080b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<title>Strada</title>
+<style>
+:root{
+  --bg:#06080b;--s1:#10141a;--s2:#171c24;--s3:#222a36;--line:#232b36;
+  --tx:#f3f5f8;--mu:#8a94a3;--ac:#3fb6ff;--gr:#2fd170;--am:#ffb21e;--rd:#ff4a4a;--r:20px;
+  --sat:env(safe-area-inset-top);--sab:env(safe-area-inset-bottom);--sal:env(safe-area-inset-left);--sar:env(safe-area-inset-right);
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none;overscroll-behavior:none;-webkit-text-size-adjust:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation}
+input,select{font:inherit;font-size:17px;color:var(--tx);background:var(--s2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;width:100%;-webkit-user-select:text;user-select:text;outline:none;-webkit-appearance:none;appearance:none}
+input:focus,select:focus{border-color:var(--ac)}
+svg.i{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* layout */
+.app{position:fixed;inset:0;display:grid;grid-template-columns:calc(92px + var(--sal)) 1fr}
+.dock{background:var(--s1);border-right:1px solid var(--line);padding:calc(8px + var(--sat)) 8px calc(8px + var(--sab)) calc(8px + var(--sal));display:flex;flex-direction:column;gap:4px;overflow:hidden}
+.dock .clock{font-weight:700;font-size:21px;text-align:center;padding:6px 0 8px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.dock button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px;border-radius:16px;color:var(--mu);font-size:11px;font-weight:600}
+.dock button.on{background:var(--s3);color:var(--tx)}
+.dock button.sos{color:var(--rd);margin-top:auto}
+@media (orientation:landscape) and (max-height:520px){
+  .dock{gap:0;padding-top:calc(4px + var(--sat));padding-bottom:calc(4px + var(--sab))}
+  .dock .clock{font-size:18px;padding:4px 0 2px}
+  .dock button{padding:5px 2px;font-size:10px;gap:2px}
+  .dock svg.i{width:23px;height:23px}
+}
+main{position:relative;overflow:hidden}
+.view{position:absolute;inset:0;padding:calc(14px + var(--sat)) calc(14px + var(--sar)) calc(16px + var(--sab)) 14px;overflow-y:auto;display:none;-webkit-overflow-scrolling:touch}
+.view.on{display:block}
+@media (orientation:portrait){
+  .app{grid-template-columns:1fr;grid-template-rows:1fr calc(70px + var(--sab))}
+  .dock{grid-row:2;flex-direction:row;border-right:0;border-top:1px solid var(--line);padding:6px calc(6px + var(--sar)) calc(6px + var(--sab)) calc(6px + var(--sal));justify-content:space-around}
+  .dock .clock{display:none}
+  .dock button{flex:1;padding:7px 0}
+  .dock button.sos{margin-top:0}
+  main{grid-row:1}
+  .view{padding-left:calc(14px + var(--sal));padding-bottom:16px}
+}
+
+/* type */
+h1{font-size:40px;font-weight:800;letter-spacing:-.03em}
+h2{font-size:24px;font-weight:700;letter-spacing:-.02em}
+h3{font-size:13px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;margin:22px 2px 10px}
+.note{font-size:14px;color:var(--mu);line-height:1.45}
+.head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 2px 14px}
+
+/* components */
+.card{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;border-radius:14px;background:var(--ac);color:#00121c;font-weight:700;font-size:17px;white-space:nowrap}
+.btn:active{filter:brightness(.85)}
+.btn.ghost{background:var(--s2);color:var(--tx);border:1px solid var(--line)}
+.btn.green{background:var(--gr);color:#00170a}
+.btn.red{background:var(--rd);color:#fff}
+.btn.w{width:100%}
+.btn.xl{font-size:20px;padding:18px 36px;border-radius:18px}
+.icon-btn{width:44px;height:44px;border-radius:14px;background:var(--s2);display:grid;place-items:center;color:var(--mu);flex:none}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:99px;background:var(--s2);font-size:13px;font-weight:600;color:var(--mu);white-space:nowrap}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--mu)}
+.pill.good .dot{background:var(--gr)}.pill.warn .dot{background:var(--am)}.pill.bad .dot{background:var(--rd)}
+.pill.live{color:var(--gr)}.pill.live .dot{background:var(--gr);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.3}}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:12px}
+.tile{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;justify-content:space-between;gap:12px;text-align:left;min-height:104px;transition:transform .12s,background .12s;min-width:0}
+.tile:active{transform:scale(.97);background:var(--s2)}
+.tile .ib{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:color-mix(in srgb,var(--c,var(--ac)) 17%,transparent);color:var(--c,var(--ac))}
+.tile b{font-size:17px;display:block;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile span{font-size:13px;color:var(--mu);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.tile.danger{background:#22090b;border-color:#4d171b}
+.tile.big{min-height:124px}
+.tile.big b{font-size:20px}
+.empty{grid-column:1/-1;text-align:center;padding:26px 16px;border:1px dashed var(--line);border-radius:var(--r);display:flex;flex-direction:column;align-items:center;gap:12px}
+
+/* home */
+.home{display:grid;grid-template-columns:minmax(270px,1fr) minmax(0,1.4fr);gap:12px;min-height:100%}
+.cluster{display:flex;flex-direction:column;gap:10px;transition:border-color .3s,box-shadow .3s;min-width:0}
+.cluster.over{border-color:var(--rd);box-shadow:inset 0 0 0 2px var(--rd)}
+.loc{display:flex;flex-direction:column;min-width:0}
+.loc b{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.loc span{color:var(--mu);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.speed{display:flex;align-items:baseline;justify-content:center;gap:8px;flex:1;padding:4px 0}
+#spd{font-size:clamp(80px,24vh,156px);font-weight:700;letter-spacing:-.05em;font-variant-numeric:tabular-nums;line-height:.95}
+.speed small{font-size:18px;color:var(--mu);font-weight:600}
+.cluster.over #spd{color:var(--rd)}
+.meta{color:var(--mu);font-size:14px;font-weight:600}
+.wx{display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid var(--line);min-height:58px}
+.wx .t{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+.wx .d{display:flex;flex-direction:column;font-size:13px;color:var(--mu);min-width:0}
+.wx .d b{color:var(--tx);font-size:15px}
+.wx svg.i{width:34px;height:34px;color:var(--am)}
+.home .tiles{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr}
+@media (orientation:portrait){
+  .home{grid-template-columns:1fr;min-height:0}
+  .home .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #spd{font-size:clamp(84px,14vh,130px)}
+}
+
+/* maps */
+.search{display:flex;gap:10px}
+.search input{flex:1;font-size:18px;padding:15px 16px;min-width:0}
+.seg{display:flex;background:var(--s2);border-radius:13px;padding:3px;gap:3px;margin-top:12px}
+.seg button{flex:1;padding:10px 6px;border-radius:10px;font-weight:600;font-size:14px;color:var(--mu)}
+.seg button.on{background:var(--s3);color:var(--tx)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:10px 14px;border-radius:12px;background:var(--s2);border:1px solid var(--line);font-size:15px;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* trip */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.stat{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;min-width:0}
+.stat span{font-size:13px;color:var(--mu);font-weight:600}
+.stat b{display:block;font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin-top:4px;white-space:nowrap}
+.stat b small{font-size:15px;color:var(--mu);margin-left:4px;font-weight:600}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.actions .btn{flex:1;min-width:150px}
+.calc{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.calc input{width:140px}
+.calc .res{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+
+/* sos */
+.coords{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em;-webkit-user-select:text;user-select:text}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:16px}
+.kv dt{color:var(--mu)}
+.kv dd{font-weight:600;-webkit-user-select:text;user-select:text}
+
+/* settings */
+.fld{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.fld span{font-size:13px;color:var(--mu);font-weight:600}
+.grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:0 12px}
+.lrow{display:flex;gap:8px;margin-bottom:8px}
+.lrow input{min-width:0}
+.lrow .del{width:48px;flex:none;border-radius:12px;background:var(--s2);color:var(--rd);display:grid;place-items:center}
+.add{width:100%;padding:13px;border-radius:12px;border:1px dashed #33404f;color:var(--ac);font-weight:600}
+
+/* sheet, overlays */
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.sheet.on{display:flex}
+.pan{background:var(--s1);border:1px solid var(--line);border-radius:24px 24px 0 0;width:min(660px,100%);max-height:90dvh;overflow:auto;padding:18px calc(18px + var(--sar)) calc(18px + var(--sab)) calc(18px + var(--sal))}
+@media (orientation:landscape){.sheet{align-items:center;padding:12px}.pan{border-radius:24px;padding-bottom:18px}}
+.list button{display:flex;align-items:center;gap:12px;width:100%;padding:15px;border-radius:14px;background:var(--s2);margin-bottom:8px;text-align:left;font-size:16px;font-weight:600}
+.list button svg.i{color:var(--ac);width:22px;height:22px}
+.ov{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:24px calc(24px + var(--sar)) calc(24px + var(--sab)) calc(24px + var(--sal))}
+.ov[hidden]{display:none}
+.ov .note{max-width:420px}
+.logo{width:84px;height:84px;border-radius:24px;background:linear-gradient(145deg,#1b2a3a,#0b1118);display:grid;place-items:center;color:var(--ac);border:1px solid var(--line)}
+.logo svg.i{width:42px;height:42px}
+.ov.brk{background:rgba(6,8,11,.94)}
+.ov.brk .logo{color:var(--am)}
+.ov .btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+#toast{position:fixed;left:50%;bottom:calc(24px + var(--sab));transform:translate(-50%,20px);opacity:0;background:var(--s3);padding:13px 18px;border-radius:14px;font-weight:600;font-size:15px;transition:.25s;z-index:40;pointer-events:none;max-width:88vw;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@media (orientation:portrait){#toast{bottom:calc(86px + var(--sab))}}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="dock" id="dock">
+    <div class="clock" id="clock">--:--</div>
+    <button data-act="tab" data-arg="home" class="on"><svg class="i" viewBox="0 0 24 24" data-i="gauge"></svg>Home</button>
+    <button data-act="tab" data-arg="maps"><svg class="i" viewBox="0 0 24 24" data-i="map"></svg>Mappe</button>
+    <button data-act="tab" data-arg="music"><svg class="i" viewBox="0 0 24 24" data-i="music"></svg>Musica</button>
+    <button data-act="tab" data-arg="contacts"><svg class="i" viewBox="0 0 24 24" data-i="users"></svg>Contatti</button>
+    <button data-act="tab" data-arg="trip"><svg class="i" viewBox="0 0 24 24" data-i="route"></svg>Viaggio</button>
+    <button data-act="tab" data-arg="sos" class="sos"><svg class="i" viewBox="0 0 24 24" data-i="alert"></svg>SOS</button>
+  </nav>
+
+  <main>
+    <!-- HOME -->
+    <section class="view on" id="v-home">
+      <div class="home">
+        <div class="card cluster" id="cluster">
+          <div class="row">
+            <div class="loc"><b id="h-street">Ricerca posizione…</b><span id="h-city">&nbsp;</span></div>
+            <button class="icon-btn" data-act="tab" data-arg="settings" aria-label="Impostazioni"><svg class="i" viewBox="0 0 24 24" data-i="settings"></svg></button>
+          </div>
+          <div class="speed"><span id="spd">--</span><small>km/h</small></div>
+          <div class="row meta"><span id="hdg">&nbsp;</span><span class="pill" id="gps"><span class="dot"></span><span>GPS</span></span></div>
+          <div class="row meta"><span id="h-trip">Viaggio non avviato</span><span id="h-break"></span></div>
+          <div class="wx" id="wx"><span class="note">Meteo in arrivo appena c'è il GPS</span></div>
+        </div>
+        <div class="tiles" id="home-tiles"></div>
+      </div>
+    </section>
+
+    <!-- MAPPE -->
+    <section class="view" id="v-maps">
+      <div class="head"><h2>Dove andiamo?</h2></div>
+      <form class="search" id="qform" autocomplete="off">
+        <input id="q" type="search" placeholder="Indirizzo, città o luogo" enterkeyhint="go">
+        <button class="btn" type="submit"><svg class="i" viewBox="0 0 24 24" data-i="nav"></svg>Vai</button>
+      </form>
+      <div class="seg" id="navseg"></div>
+      <h3>Preferiti</h3>
+      <div class="tiles" id="m-favs"></div>
+      <div id="m-recent-wrap"><h3>Recenti</h3><div class="chips" id="m-recent"></div></div>
+      <h3>Vicino a te</h3>
+      <div class="tiles" id="m-near"></div>
+      <h3>Parcheggio</h3>
+      <div class="card row" id="m-park"></div>
+    </section>
+
+    <!-- MUSICA -->
+    <section class="view" id="v-music">
+      <div class="head"><h2>Musica e audio</h2></div>
+      <div class="tiles" id="mu-apps"></div>
+      <h3>Le tue playlist</h3>
+      <div class="tiles" id="mu-pl"></div>
+    </section>
+
+    <!-- CONTATTI -->
+    <section class="view" id="v-contacts">
+      <div class="head"><h2>Contatti</h2></div>
+      <div class="tiles" id="c-top"></div>
+      <h3>Preferiti</h3>
+      <div class="tiles" id="c-list"></div>
+    </section>
+
+    <!-- VIAGGIO -->
+    <section class="view" id="v-trip">
+      <div class="head"><h2>Viaggio</h2><span class="pill" id="t-state"><span class="dot"></span><span>Fermo</span></span></div>
+      <div class="stats">
+        <div class="stat"><span>Distanza</span><b id="t-dist">0,0<small>km</small></b></div>
+        <div class="stat"><span>Tempo di viaggio</span><b id="t-time">0:00</b></div>
+        <div class="stat"><span>Velocità media</span><b id="t-avg">0<small>km/h</small></b></div>
+        <div class="stat"><span>Velocità massima</span><b id="t-max">0<small>km/h</small></b></div>
+        <div class="stat"><span>Costo carburante</span><b id="t-cost">0,00<small>€</small></b></div>
+        <div class="stat"><span>Prossima pausa tra</span><b id="t-break">2:00</b></div>
+      </div>
+      <div class="actions">
+        <button class="btn green" data-act="trip" id="t-toggle">Avvia viaggio</button>
+        <button class="btn ghost" data-act="breakDone">Ho fatto una pausa</button>
+        <button class="btn ghost" data-act="tripReset">Azzera</button>
+      </div>
+      <p class="note" style="margin-top:12px">Il viaggio parte da solo quando superi i 15 km/h. Il promemoria pausa si azzera da solo dopo 10 minuti da fermo. Mentre usi un'altra app (es. Mappe) la distanza viene stimata in linea d'aria.</p>
+      <h3>Quanto costa un tragitto?</h3>
+      <div class="card calc">
+        <input id="calc-km" type="text" inputmode="decimal" placeholder="Km">
+        <span class="res" id="calc-res">— €</span>
+        <span class="note" id="calc-note"></span>
+      </div>
+    </section>
+
+    <!-- SOS -->
+    <section class="view" id="v-sos">
+      <div class="head"><h2>Emergenza</h2></div>
+      <div class="tiles" id="sos-tiles"></div>
+      <h3>La tua posizione</h3>
+      <div class="card"><div class="coords" id="sos-coords">In attesa del GPS…</div><div class="note" id="sos-addr" style="margin-top:6px"></div></div>
+      <h3>Dati auto</h3>
+      <div class="card" id="sos-car"></div>
+    </section>
+
+    <!-- IMPOSTAZIONI -->
+    <section class="view" id="v-settings">
+      <div class="head"><h2>Impostazioni</h2><button class="btn ghost" data-act="tab" data-arg="home">Fatto</button></div>
+      <div id="set-body"></div>
+    </section>
+  </main>
+</div>
+
+<div class="sheet" id="sheet" data-act="closeSheet" data-arg="bg">
+  <div class="pan">
+    <div class="head"><h2 id="sheet-t"></h2><button class="icon-btn" data-act="closeSheet" aria-label="Chiudi"><svg class="i" viewBox="0 0 24 24" data-i="x"></svg></button></div>
+    <div id="sheet-b"></div>
+  </div>
+</div>
+
+<div class="ov" id="start">
+  <div class="logo"><svg class="i" viewBox="0 0 24 24" data-i="nav"></svg></div>
+  <h1>Strada</h1>
+  <p class="note">Mappe, musica, messaggi e dati di viaggio in un'unica schermata pensata per l'auto.</p>
+  <button class="btn xl" data-act="start">Partiamo</button>
+  <p class="note" id="install-hint" hidden>Per usarla a tutto schermo come un'app: tocca <b>Condividi</b> in Safari e poi <b>Aggiungi alla schermata Home</b>.</p>
+</div>
+
+<div class="ov brk" id="brk" hidden>
+  <div class="logo"><svg class="i" viewBox="0 0 24 24" data-i="coffee"></svg></div>
+  <h1>È ora di una pausa</h1>
+  <p class="note" id="brk-note">Guidi da un po'. Fermati qualche minuto, bevi qualcosa e sgranchisci le gambe.</p>
+  <div class="btns">
+    <button class="btn xl" data-act="breakFind">Trova un'area di servizio</button>
+    <button class="btn ghost xl" data-act="breakLater">Tra 15 minuti</button>
+  </div>
+  <button class="btn ghost" data-act="breakDone">Ho già fatto pausa</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(()=>{
+'use strict';
+/* ---------- icone ---------- */
+const ICONS={
+  gauge:'<path d="M12 14l4-4"/><path d="M3.3 19a10 10 0 1 1 17.4 0"/>',
+  map:'<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/>',
+  music:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  users:'<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/>',
+  route:'<circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H17a3.5 3.5 0 0 0 0-7H7a3.5 3.5 0 0 1 0-7h8.5"/>',
+  alert:'<path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18h.01"/>',
+  settings:'<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
+  home:'<path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/>',
+  briefcase:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>',
+  star:'<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3l-5.5 2.9 1-6.2L3 9.6l6.2-.9z"/>',
+  pin:'<path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  nav:'<path d="M3 11 21 3l-8 18-2-8z"/>',
+  phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
+  msg:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+  sms:'<path d="M4 5h16v11H9l-5 4z"/>',
+  send:'<path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/>',
+  share:'<path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7M16 6l-4-4-4 4M12 2v13"/>',
+  fuel:'<path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h12M4 10h10"/><path d="M14 8h2a2 2 0 0 1 2 2v6a1.5 1.5 0 0 0 3 0V8l-3-3"/>',
+  bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  parking:'<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>',
+  coffee:'<path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V9z"/><path d="M16 11h1a3 3 0 0 1 0 6h-1M8 3v3M12 3v3"/>',
+  food:'<path d="M7 3v7a2 2 0 0 0 2 2v9M11 3v7a2 2 0 0 1-2 2M9 3v6"/><path d="M17 21V3c-2 1-3 4-3 8h3"/>',
+  cross:'<rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/>',
+  bed:'<path d="M3 18V6M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="2"/>',
+  wrench:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>',
+  cart:'<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.5 12h11l2-8H6.2"/>',
+  card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+  mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+  book:'<path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4zM20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/>',
+  play:'<path d="M7 4l13 8-13 8z"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  truck:'<path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',
+  shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+  heart:'<path d="M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z"/>',
+  x:'<path d="M18 6 6 18M6 6l12 12"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>',
+  cloud:'<path d="M7 19h10a4.5 4.5 0 0 0 .6-9A6.5 6.5 0 0 0 5.2 11 4 4 0 0 0 7 19z"/>',
+  rain:'<path d="M7 15h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 6.5 4.3 4.3 0 0 0 7 15z"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/>',
+  snow:'<path d="M7 15h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 6.5 4.3 4.3 0 0 0 7 15z"/><path d="M8 19h.01M12 20h.01M16 19h.01M10 22h.01M14 22h.01"/>',
+  fog:'<path d="M4 8h16M3 12h18M5 16h14M8 20h8"/>'
+};
+const ic=n=>`<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||''}</svg>`;
+const paintIcons=root=>root.querySelectorAll('svg[data-i]').forEach(s=>{s.innerHTML=ICONS[s.dataset.i]||'';s.removeAttribute('data-i')});
+
+/* ---------- utilità ---------- */
+const $=s=>document.querySelector(s);
+const enc=encodeURIComponent;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const hm=t=>{const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes())};
+const dur=ms=>{const m=Math.max(0,Math.floor(ms/60000));return Math.floor(m/60)+':'+pad(m%60)};
+const fmt=(v,d=1)=>Number(v||0).toLocaleString('it-IT',{minimumFractionDigits:d,maximumFractionDigits:d});
+const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const STANDALONE=navigator.standalone===true||matchMedia('(display-mode: standalone)').matches;
+function hav(a,b,c,d){const R=6371000,r=Math.PI/180,x=(c-a)*r,y=(d-b)*r,h=Math.sin(x/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(y/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+const compass=h=>['N','NE','E','SE','S','SO','O','NO'][Math.round(((h%360)+360)%360/45)%8];
+function open(u){location.href=u}
+let toastT;function toast(t,ms=2600){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),ms)}
+
+/* ---------- dati salvati ---------- */
+const DEF={
+  home:'',work:'',nav:'apple',music:'spotify',
+  favs:[],contacts:[],playlists:[],recent:[],park:null,
+  msgs:[{t:'Sono partito, ti scrivo quando arrivo'},{t:'Sto guidando, ti richiamo appena posso'},{t:'Arrivo tra circa 15 minuti'},{t:"C'è traffico, arrivo un po' in ritardo"},{t:'Sono arrivato!'},{t:'Ecco dove mi trovo: {posizione}'}],
+  cons:6.5,price:1.80,breakMin:120,speedAlert:0,
+  plate:'',insurer:'',policy:'',insPhone:'',iceName:'',ice:''
+};
+const load=(k,d)=>{try{return {...d,...JSON.parse(localStorage.getItem(k)||'{}')}}catch(e){return {...d}}};
+const S=load('strada.cfg',DEF);
+const save=()=>{try{localStorage.setItem('strada.cfg',JSON.stringify(S))}catch(e){}};
+const TDEF={running:false,manual:false,dist:0,elapsed:0,max:0,sinceBreak:0,lastTick:0,snooze:0};
+const T=load('strada.trip',TDEF);
+const saveTrip=()=>{try{localStorage.setItem('strada.trip',JSON.stringify(T))}catch(e){}};
+if(T.running&&Date.now()-T.lastTick>45*60000)T.lastTick=Date.now(); // app chiusa a lungo: non contare il buco
+
+/* ---------- app esterne ---------- */
+const MUSIC={
+  spotify:{n:'Spotify',u:'spotify:',c:'#1ed760',i:'music'},
+  apple:{n:'Apple Music',u:'music://',c:'#fa2d48',i:'music'},
+  yt:{n:'YouTube Music',u:'youtubemusic://',c:'#ff4e45',i:'play'},
+  amazon:{n:'Amazon Music',u:'amznmp3://',c:'#25d1da',i:'music'},
+  podcast:{n:'Podcast',u:'podcasts://',c:'#a066ff',i:'mic'},
+  audible:{n:'Audible',u:'audible://',c:'#f7991c',i:'book'}
+};
+const NAVS=[['apple','Apple Mappe'],['google','Google Maps'],['waze','Waze']];
+const NEAR=[
+  ['Benzinaio','Distributore di benzina','fuel','#ffb21e'],['Ricarica auto','Colonnina di ricarica','bolt','#2fd170'],
+  ['Parcheggio','Parcheggio','parking','#3fb6ff'],['Area di servizio','Area di servizio','coffee','#ff8a3d'],
+  ['Ristorante','Ristorante','food','#ff6b8b'],['Bar','Bar','coffee','#c8a07a'],
+  ['Farmacia','Farmacia','cross','#2fd170'],['Ospedale','Pronto soccorso','cross','#ff4a4a'],
+  ['Hotel','Hotel','bed','#a066ff'],['Officina','Officina meccanica','wrench','#8a94a3'],
+  ['Supermercato','Supermercato','cart','#3fb6ff'],['Bancomat','Bancomat','card','#ffb21e']
+];
+function navUrl(dest,walk){
+  const q=typeof dest==='string'?dest:`${dest.lat},${dest.lon}`;
+  if(S.nav==='google')return `comgooglemaps://?daddr=${enc(q)}&directionsmode=${walk?'walking':'driving'}`;
+  if(S.nav==='waze'&&!walk)return typeof dest==='string'?`waze://?q=${enc(q)}&navigate=yes`:`waze://?ll=${q}&navigate=yes`;
+  return `${IOS?'maps://':'https://maps.apple.com/'}?daddr=${enc(q)}&dirflg=${walk?'w':'d'}`;
+}
+function searchUrl(q){
+  const ll=G.lat!=null?`${G.lat},${G.lon}`:'';
+  if(S.nav==='google')return `comgooglemaps://?q=${enc(q)}${ll?'&center='+ll:''}`;
+  if(S.nav==='waze')return `waze://?q=${enc(q)}`;
+  return `${IOS?'maps://':'https://maps.apple.com/'}?q=${enc(q)}${ll?'&sll='+ll:''}`;
+}
+const navTo=(d,w)=>open(navUrl(d,w));
+const posLink=()=>G.lat!=null?`https://maps.google.com/?q=${G.lat.toFixed(6)},${G.lon.toFixed(6)}`:null;
+function waNum(n){let d=String(n||'').replace(/[^\d+]/g,'');if(d.startsWith('+'))return d.slice(1);if(d.startsWith('00'))return d.slice(2);if(/^[03]/.test(d))return '39'+d;return d}
+const telNum=n=>String(n||'').replace(/[^\d+]/g,'');
+function plUrl(u){
+  u=String(u||'').trim();
+  const m=u.match(/open\.spotify\.com\/(?:intl-[\w-]+\/)?(playlist|album|track|show|episode|artist)\/([A-Za-z0-9]+)/);
+  if(m)return `spotify:${m[1]}:${m[2]}`;
+  if(/^https?:\/\/music\.apple\.com/.test(u))return u.replace(/^https?:/,'music:');
+  return u;
+}
+
+/* ---------- UI ---------- */
+const tile=t=>`<button class="tile${t.cls?' '+t.cls:''}" style="--c:${t.c||'var(--ac)'}" data-act="${t.a}" data-arg="${esc(t.g??'')}"><div class="ib">${ic(t.i)}</div><div><b>${esc(t.b)}</b><span>${esc(t.s||'')}</span></div></button>`;
+let view='home';
+function show(v){
+  view=v;
+  document.querySelectorAll('.view').forEach(e=>e.classList.toggle('on',e.id==='v-'+v));
+  document.querySelectorAll('#dock button').forEach(b=>b.classList.toggle('on',b.dataset.arg===v));
+  if(v==='settings')renderSettings();
+  if(v==='trip')updateTrip();
+  $('#v-'+v).scrollTop=0;
+}
+
+function renderHome(){
+  const m=MUSIC[S.music]||MUSIC.spotify;
+  const t=[
+    S.home?{a:'nav',g:'home',i:'home',b:'Casa',s:S.home,c:'#3fb6ff'}:{a:'tab',g:'settings',i:'home',b:'Casa',s:'Tocca per impostare',c:'#3fb6ff'},
+    S.work?{a:'nav',g:'work',i:'briefcase',b:'Lavoro',s:S.work,c:'#a066ff'}:{a:'tab',g:'settings',i:'briefcase',b:'Lavoro',s:'Tocca per impostare',c:'#a066ff'},
+    {a:'music',g:S.music,i:m.i,b:m.n,s:'Apri la musica',c:m.c},
+    {a:'tab',g:'contacts',i:'msg',b:'Messaggi',s:S.contacts.length?'Chiama o scrivi':'WhatsApp e chiamate',c:'#25d366'},
+    {a:'near',g:'0',i:'fuel',b:'Benzinaio',s:'Il più vicino',c:'#ffb21e'},
+    S.park?{a:'park',i:'parking',b:"Torna all'auto",s:'Parcheggiata alle '+hm(S.park.t),c:'#2fd170'}:{a:'park',i:'parking',b:'Salva parcheggio',s:'Ricorda dove sei',c:'#2fd170'}
+  ];
+  $('#home-tiles').innerHTML=t.map(tile).join('');
+}
+function renderMaps(){
+  $('#navseg').innerHTML=NAVS.map(([k,n])=>`<button type="button" class="${S.nav===k?'on':''}" data-act="navapp" data-arg="${k}">${n}</button>`).join('');
+  const f=[];
+  f.push(S.home?{a:'nav',g:'home',i:'home',b:'Casa',s:S.home,c:'#3fb6ff'}:{a:'tab',g:'settings',i:'home',b:'Casa',s:'Tocca per impostare',c:'#3fb6ff'});
+  f.push(S.work?{a:'nav',g:'work',i:'briefcase',b:'Lavoro',s:S.work,c:'#a066ff'}:{a:'tab',g:'settings',i:'briefcase',b:'Lavoro',s:'Tocca per impostare',c:'#a066ff'});
+  S.favs.forEach((x,i)=>{if(x.a)f.push({a:'nav',g:'f'+i,i:'star',b:x.n||x.a,s:x.a,c:'#ffb21e'})});
+  f.push({a:'tab',g:'settings',i:'plus',b:'Aggiungi',s:'Nuovo preferito',c:'#8a94a3'});
+  $('#m-favs').innerHTML=f.map(tile).join('');
+  $('#m-recent-wrap').hidden=!S.recent.length;
+  $('#m-recent').innerHTML=S.recent.map((r,i)=>`<button class="chip" data-act="nav" data-arg="r${i}">${esc(r)}</button>`).join('');
+  $('#m-near').innerHTML=NEAR.map((n,i)=>tile({a:'near',g:i,i:n[2],b:n[0],s:'Cerca vicino',c:n[3]})).join('');
+  $('#m-park').innerHTML=S.park
+    ?`<div class="loc"><b>Auto parcheggiata alle ${hm(S.park.t)}</b><span>${esc(S.park.addr||S.park.lat.toFixed(5)+', '+S.park.lon.toFixed(5))}</span></div><div class="row"><button class="btn ghost" data-act="parkClear">Cancella</button><button class="btn" data-act="park">Portami lì</button></div>`
+    :`<div class="loc"><b>Nessun parcheggio salvato</b><span>Quando scendi dall'auto, salva la posizione</span></div><button class="btn" data-act="park">Salva qui</button>`;
+}
+function renderMusic(){
+  $('#mu-apps').innerHTML=Object.entries(MUSIC).map(([k,m])=>tile({a:'music',g:k,i:m.i,b:m.n,s:S.music===k?'Preferita':'Apri',c:m.c,cls:'big'})).join('');
+  const p=S.playlists.filter(x=>x.u).map((x,i)=>tile({a:'pl',g:S.playlists.indexOf(x),i:'list',b:x.n||'Playlist',s:/spotify/.test(x.u)?'Spotify':/apple/.test(x.u)?'Apple Music':'Link',c:'#1ed760'}));
+  p.push(tile({a:'tab',g:'settings',i:'plus',b:'Aggiungi',s:'Incolla un link',c:'#8a94a3'}));
+  $('#mu-pl').innerHTML=p.join('');
+}
+function renderContacts(){
+  $('#c-top').innerHTML=[
+    {a:'wa',i:'msg',b:'WhatsApp',s:'Apri le chat',c:'#25d366'},
+    {a:'sms',i:'sms',b:'Messaggi',s:'SMS e iMessage',c:'#3fb6ff'},
+    {a:'share',i:'share',b:'Invia posizione',s:'A chi vuoi',c:'#ffb21e'}
+  ].map(tile).join('');
+  const c=S.contacts.map((x,i)=>x.p?tile({a:'contact',g:i,i:'phone',b:x.n||x.p,s:x.p,c:'#2fd170'}):'').join('');
+  $('#c-list').innerHTML=c||`<div class="empty"><b>Nessun contatto preferito</b><span class="note">Aggiungi le persone che senti in viaggio: le chiami o gli scrivi con un tocco.</span><button class="btn" data-act="tab" data-arg="settings">Aggiungi contatti</button></div>`;
+}
+function renderSos(){
+  const t=[{a:'call',g:'112',i:'phone',b:'Chiama 112',s:'Numero unico emergenze',c:'#ff4a4a',cls:'danger big'},
+           {a:'call',g:'803116',i:'truck',b:'Soccorso stradale',s:'ACI 803.116',c:'#ffb21e',cls:'big'}];
+  if(S.insPhone)t.push({a:'call',g:S.insPhone,i:'shield',b:'Assistenza '+(S.insurer||'assicurazione'),s:S.insPhone,c:'#3fb6ff',cls:'big'});
+  if(S.ice)t.push({a:'call',g:S.ice,i:'heart',b:S.iceName||'Contatto emergenza',s:S.ice,c:'#ff6b8b',cls:'big'});
+  t.push({a:'share',i:'share',b:'Invia posizione',s:'Link alla mappa',c:'#2fd170',cls:'big'});
+  $('#sos-tiles').innerHTML=t.map(tile).join('');
+  const car=[['Targa',S.plate],['Assicurazione',S.insurer],['Polizza',S.policy],['Assistenza',S.insPhone]].filter(x=>x[1]);
+  $('#sos-car').innerHTML=car.length?`<dl class="kv">${car.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`:`<div class="row"><span class="note">Salva targa e dati assicurazione per averli a portata di mano.</span><button class="btn ghost" data-act="tab" data-arg="settings">Aggiungi</button></div>`;
+  updateSosPos();
+}
+function renderAll(){renderHome();renderMaps();renderMusic();renderContacts();renderSos();updateCalc()}
+
+/* ---------- impostazioni ---------- */
+function fld(label,k,type='text',ph=''){
+  const num=type==='dec';
+  return `<label class="fld"><span>${label}</span><input data-k="${k}"${num?' data-num="1" inputmode="decimal"':''} type="${num?'text':type}" value="${esc(S[k]??'')}" placeholder="${esc(ph)}"></label>`;
+}
+function sel(label,k,opts){return `<label class="fld"><span>${label}</span><select data-k="${k}">${opts.map(([v,n])=>`<option value="${v}"${S[k]===v?' selected':''}>${esc(n)}</option>`).join('')}</select></label>`}
+function listEd(name,fields,add){
+  return S[name].map((it,i)=>`<div class="lrow">${fields.map(f=>`<input data-list="${name}" data-i="${i}" data-f="${f.k}" type="${f.t||'text'}" placeholder="${esc(f.ph)}" value="${esc(it[f.k]||'')}"${f.w?` style="flex:${f.w}"`:''}>`).join('')}<button class="del" data-act="del" data-arg="${name}:${i}" aria-label="Elimina">${ic('x')}</button></div>`).join('')
+    +`<button class="add" data-act="add" data-arg="${name}">+ ${add}</button>`;
+}
+function renderSettings(){
+  $('#set-body').innerHTML=`
+  <p class="note">Tutto viene salvato da solo, solo su questo telefono.</p>
+  <h3>Destinazioni</h3>
+  <div class="grid2">${fld('Indirizzo di casa','home','text','Via Roma 1, Milano')}${fld('Indirizzo di lavoro','work','text','Via Torino 10, Milano')}</div>
+  ${listEd('favs',[{k:'n',ph:'Nome (es. Mamma)',w:1},{k:'a',ph:'Indirizzo',w:2}],'Aggiungi destinazione preferita')}
+  <h3>App preferite</h3>
+  <div class="grid2">${sel('Navigatore','nav',NAVS)}${sel('Musica (pulsante in Home)','music',Object.entries(MUSIC).map(([k,v])=>[k,v.n]))}</div>
+  <h3>Contatti preferiti</h3>
+  ${listEd('contacts',[{k:'n',ph:'Nome',w:1},{k:'p',ph:'Numero (es. 333 1234567)',t:'tel',w:1}],'Aggiungi contatto')}
+  <h3>Messaggi rapidi (WhatsApp)</h3>
+  <p class="note" style="margin-bottom:10px">Scrivi {posizione} per inserire il link alla tua posizione attuale.</p>
+  ${listEd('msgs',[{k:'t',ph:'Testo del messaggio'}],'Aggiungi messaggio')}
+  <h3>Playlist</h3>
+  <p class="note" style="margin-bottom:10px">Incolla il link di condivisione di una playlist Spotify, Apple Music o YouTube Music.</p>
+  ${listEd('playlists',[{k:'n',ph:'Nome',w:1},{k:'u',ph:'Link',w:2}],'Aggiungi playlist')}
+  <h3>Viaggio</h3>
+  <div class="grid2">${fld('Consumo medio (litri ogni 100 km)','cons','dec')}${fld('Prezzo carburante (€ al litro)','price','dec')}${fld('Promemoria pausa ogni … minuti (0 = spento)','breakMin','dec')}${fld('Avviso se superi … km/h (0 = spento)','speedAlert','dec')}</div>
+  <h3>Auto ed emergenza</h3>
+  <div class="grid2">${fld('Targa','plate','text','AB123CD')}${fld('Compagnia assicurativa','insurer')}${fld('Numero di polizza','policy')}${fld('Numero assistenza stradale della polizza','insPhone','tel')}${fld('Contatto di emergenza: nome','iceName')}${fld('Contatto di emergenza: numero','ice','tel')}</div>
+  <p class="note" style="margin-top:8px">Meteo da Open-Meteo e nome della via da OpenStreetMap: ricevono solo le coordinate, nient'altro.</p>`;
+}
+document.addEventListener('input',e=>{
+  const el=e.target;
+  if(el.id==='calc-km'){updateCalc();return}
+  if(el.dataset.k){const k=el.dataset.k;S[k]=el.dataset.num?(parseFloat(el.value.replace(',','.'))||0):el.value.trim()}
+  else if(el.dataset.list){S[el.dataset.list][+el.dataset.i][el.dataset.f]=el.value.trim()}
+  else return;
+  save();renderAll();
+});
+
+/* ---------- azioni ---------- */
+const A={
+  start(){
+    $('#start').hidden=true;
+    unlockAudio();startGPS();keepAwake();
+    if(!('wakeLock' in navigator))setTimeout(()=>toast('Consiglio: imposta Blocco automatico su "Mai" durante il viaggio',4500),800);
+  },
+  tab:v=>show(v),
+  nav(k){
+    let d=null;
+    if(k==='home')d=S.home;else if(k==='work')d=S.work;
+    else if(k[0]==='f')d=S.favs[+k.slice(1)]?.a;else if(k[0]==='r')d=S.recent[+k.slice(1)];
+    if(d)navTo(d);
+  },
+  navapp(k){S.nav=k;save();renderMaps()},
+  near(i){const n=NEAR[+i];if(n)open(searchUrl(n[1]))},
+  park(){
+    if(S.park){navTo(S.park,true);return}
+    if(G.lat==null){toast('Aspetto il segnale GPS, riprova tra poco');return}
+    S.park={lat:G.lat,lon:G.lon,t:Date.now(),addr:[ADDR.road,ADDR.city].filter(Boolean).join(', ')};
+    save();renderAll();toast('Parcheggio salvato');
+  },
+  parkClear(){S.park=null;save();renderAll()},
+  music(k){const m=MUSIC[k];if(m)open(m.u)},
+  pl(i){const p=S.playlists[+i];if(p&&p.u)open(plUrl(p.u))},
+  wa:()=>open('whatsapp://'),
+  sms:()=>open('sms:'),
+  call:n=>open('tel:'+telNum(n)),
+  contact(i){
+    const c=S.contacts[+i];if(!c)return;
+    sheet(c.n||c.p,`
+      <div class="tiles">
+        ${tile({a:'callC',g:i,i:'phone',b:'Chiama',s:c.p,c:'#2fd170'})}
+        ${tile({a:'waC',g:i,i:'msg',b:'WhatsApp',s:'Apri la chat',c:'#25d366'})}
+        ${tile({a:'smsC',g:i,i:'sms',b:'SMS',s:'Messaggio',c:'#3fb6ff'})}
+      </div>
+      <h3>Messaggio rapido su WhatsApp</h3>
+      <div class="list">${S.msgs.filter(m=>m.t).map(m=>`<button data-act="qmsg" data-arg="${i}:${S.msgs.indexOf(m)}">${ic('send')}<span>${esc(m.t.replace('{posizione}','[la tua posizione]'))}</span></button>`).join('')}</div>`);
+  },
+  callC(i){closeSheet();open('tel:'+telNum(S.contacts[+i].p))},
+  waC(i){closeSheet();open('whatsapp://send?phone='+waNum(S.contacts[+i].p))},
+  smsC(i){closeSheet();open('sms:'+telNum(S.contacts[+i].p))},
+  qmsg(a){
+    const [i,j]=a.split(':').map(Number);const c=S.contacts[i],m=S.msgs[j];if(!c||!m)return;
+    let txt=m.t;
+    if(txt.includes('{posizione}')){const l=posLink();if(!l){toast('Posizione non ancora disponibile');return}txt=txt.replaceAll('{posizione}',l)}
+    closeSheet();open(`whatsapp://send?phone=${waNum(c.p)}&text=${enc(txt)}`);
+  },
+  async share(){
+    const l=posLink();if(!l){toast('Aspetto il segnale GPS, riprova tra poco');return}
+    const text='Sono qui: '+l;
+    if(navigator.share){try{await navigator.share({text})}catch(e){}return}
+    try{await navigator.clipboard.writeText(text);toast('Link copiato')}catch(e){open('sms:&body='+enc(text))}
+  },
+  trip(){if(T.running){T.running=false;T.manual=true}else startTrip();saveTrip();updateTrip()},
+  tripReset(){
+    sheet('Azzerare il viaggio?',`<p class="note" style="margin-bottom:14px">Distanza, tempi e velocità tornano a zero.</p><div class="actions"><button class="btn ghost" data-act="closeSheet">Annulla</button><button class="btn red" data-act="tripResetOk">Azzera</button></div>`);
+  },
+  tripResetOk(){Object.assign(T,TDEF);saveTrip();closeSheet();updateTrip();toast('Viaggio azzerato')},
+  breakDone(){T.sinceBreak=0;T.snooze=0;$('#brk').hidden=true;saveTrip();updateTrip()},
+  breakLater(){T.snooze=Date.now()+15*60000;$('#brk').hidden=true;saveTrip()},
+  breakFind(){T.snooze=Date.now()+15*60000;$('#brk').hidden=true;saveTrip();open(searchUrl('Area di servizio'))},
+  add(n){S[n].push({});save();renderSettings();renderAll();const r=document.querySelectorAll(`[data-list="${n}"]`);r[r.length-(n==='msgs'?1:2)]?.focus()},
+  del(a){const [n,i]=a.split(':');S[n].splice(+i,1);save();renderSettings();renderAll()},
+  closeSheet:(g,el,e)=>{if(g==='bg'&&e.target!==el)return;closeSheet()}
+};
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');if(!el)return;
+  const f=A[el.dataset.act];if(f){f(el.dataset.arg,el,e)}
+});
+$('#qform').addEventListener('submit',e=>{
+  e.preventDefault();const v=$('#q').value.trim();if(!v)return;
+  S.recent=[v,...S.recent.filter(x=>x.toLowerCase()!==v.toLowerCase())].slice(0,6);save();
+  $('#q').value='';$('#q').blur();renderMaps();navTo(v);
+});
+function sheet(t,html){$('#sheet-t').textContent=t;$('#sheet-b').innerHTML=html;$('#sheet').classList.add('on')}
+function closeSheet(){$('#sheet').classList.remove('on')}
+
+/* ---------- GPS ---------- */
+const G={lat:null,lon:null,acc:null,kmh:null,hdg:null,alt:null,t:0};
+let ADDR={road:'',city:'',prov:''},W=null,L=null,watchId=null,lastWx=0,wxPos=null,lastGeo=0,geoPos=null,stillSince=null,overBeep=0;
+function setGps(cls,txt){const p=$('#gps');p.className='pill '+cls;p.lastElementChild.textContent=txt}
+function startGPS(){
+  if(!('geolocation' in navigator)){setGps('bad','GPS non disponibile');return}
+  if(watchId!=null)return;
+  setGps('warn','Ricerca GPS…');
+  watchId=navigator.geolocation.watchPosition(onPos,onErr,{enableHighAccuracy:true,maximumAge:0,timeout:30000});
+}
+function onErr(e){
+  if(e.code===1){setGps('bad','Posizione negata');$('#h-street').textContent='Posizione non consentita';
+    toast('Consenti la posizione: Impostazioni › Privacy › Localizzazione › Siti web di Safari',6000)}
+  else setGps('warn','GPS debole');
+}
+function onPos(p){
+  const c=p.coords,now=p.timestamp||Date.now();
+  let kmh=(c.speed!=null&&c.speed>=0)?c.speed*3.6:null;
+  if(L){
+    const d=hav(L.lat,L.lon,c.latitude,c.longitude),dt=(now-L.t)/1000;
+    if(kmh==null&&dt>0&&dt<15)kmh=d/dt*3.6;
+    if(c.accuracy<=60&&d>=Math.max(6,c.accuracy*.6)){
+      const v=dt>0?d/dt*3.6:999;
+      if(v<260&&T.running)T.dist+=d;
+      L={lat:c.latitude,lon:c.longitude,t:now};
+    }
+  }else if(c.accuracy<=100)L={lat:c.latitude,lon:c.longitude,t:now};
+  if(kmh!=null&&kmh<3)kmh=0;
+  Object.assign(G,{lat:c.latitude,lon:c.longitude,acc:c.accuracy,kmh,alt:c.altitude,t:now});
+  if(c.heading!=null&&!isNaN(c.heading)&&kmh>3)G.hdg=c.heading;
+  if(!T.running&&!T.manual&&kmh>15)startTrip();
+  if(T.running&&kmh!=null&&c.accuracy<=30)T.max=Math.max(T.max,kmh);
+  if(!kmh){stillSince=stillSince||now;if(now-stillSince>10*60000&&T.sinceBreak>0){T.sinceBreak=0;T.snooze=0}}else stillSince=null;
+  setGps(c.accuracy<=20?'good':c.accuracy<=60?'warn':'bad',c.accuracy<=20?'GPS ottimo':c.accuracy<=60?'GPS buono':'GPS debole');
+  if(!wxPos||now-lastWx>10*60000||hav(wxPos.lat,wxPos.lon,G.lat,G.lon)>15000)fetchWx(G.lat,G.lon);
+  if(now-lastGeo>40000&&(!geoPos||hav(geoPos.lat,geoPos.lon,G.lat,G.lon)>120))fetchGeo(G.lat,G.lon);
+  updateSpeed();updateSosPos();
+}
+function updateSpeed(){
+  const k=G.kmh;
+  $('#spd').textContent=k==null?'--':Math.round(k);
+  const over=S.speedAlert>0&&k!=null&&k>S.speedAlert;
+  $('#cluster').classList.toggle('over',over);
+  if(over&&Date.now()-overBeep>20000){beep(660,2);overBeep=Date.now()}
+  const h=[];if(G.hdg!=null)h.push('Direzione '+compass(G.hdg));if(G.alt!=null)h.push(Math.round(G.alt)+' m s.l.m.');
+  $('#hdg').innerHTML=h.length?esc(h.join(' · ')):'&nbsp;';
+}
+async function fetchWx(lat,lon){
+  lastWx=Date.now();wxPos={lat,lon};
+  try{
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&current=temperature_2m,weather_code,wind_speed_10m,is_day&hourly=precipitation_probability&forecast_hours=3&timezone=auto`);
+    const j=await r.json(),cu=j.current;
+    const pp=(j.hourly?.precipitation_probability||[]).filter(x=>x!=null);
+    W={t:cu.temperature_2m,c:cu.weather_code,w:cu.wind_speed_10m,day:cu.is_day,pp:pp.length?Math.max(...pp):null};
+    renderWx();
+  }catch(e){lastWx=Date.now()-8*60000}
+}
+function wxInfo(c,day){
+  if(c===0)return[day?'sun':'moon','Sereno'];if(c<=2)return[day?'sun':'moon','Poco nuvoloso'];if(c===3)return['cloud','Coperto'];
+  if(c<=48)return['fog','Nebbia'];if(c<=57)return['rain','Pioviggine'];if(c<=67)return['rain','Pioggia'];if(c<=77)return['snow','Neve'];
+  if(c<=82)return['rain','Rovesci'];if(c<=86)return['snow','Rovesci di neve'];return['bolt','Temporale'];
+}
+function renderWx(){
+  if(!W)return;const [i,d]=wxInfo(W.c,W.day);
+  const extra=[`Vento ${Math.round(W.w)} km/h`];if(W.pp!=null)extra.push(`Pioggia ${W.pp}% (3h)`);
+  $('#wx').innerHTML=`${ic(i)}<span class="t">${Math.round(W.t)}°</span><div class="d"><b>${d}</b><span>${extra.join(' · ')}</span></div>`;
+}
+async function fetchGeo(lat,lon){
+  lastGeo=Date.now();geoPos={lat,lon};
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat.toFixed(5)}&lon=${lon.toFixed(5)}&zoom=17&accept-language=it`);
+    const a=(await r.json()).address||{};
+    ADDR={road:a.road||a.pedestrian||a.square||'',city:a.city||a.town||a.village||a.hamlet||a.municipality||'',prov:a.county||a.state||''};
+    $('#h-street').textContent=ADDR.road||ADDR.city||'Posizione rilevata';
+    $('#h-city').textContent=[ADDR.road?ADDR.city:'',ADDR.prov].filter(Boolean).join(' · ')||'\u00a0';
+    updateSosPos();
+  }catch(e){geoPos=null}
+}
+function updateSosPos(){
+  if(G.lat==null)return;
+  $('#sos-coords').textContent=`${G.lat.toFixed(5)}, ${G.lon.toFixed(5)}`;
+  $('#sos-addr').textContent=[ADDR.road,ADDR.city,ADDR.prov].filter(Boolean).join(', ')+(G.acc?` · precisione ±${Math.round(G.acc)} m`:'');
+}
+
+/* ---------- viaggio ---------- */
+function startTrip(){T.running=true;T.manual=false;T.lastTick=Date.now();saveTrip();updateTrip();toast('Viaggio avviato')}
+function updateTrip(){
+  const km=T.dist/1000,h=T.elapsed/3600000;
+  $('#t-dist').innerHTML=`${fmt(km,km<100?1:0)}<small>km</small>`;
+  $('#t-time').textContent=dur(T.elapsed);
+  $('#t-avg').innerHTML=`${h>0.01?Math.round(km/h):0}<small>km/h</small>`;
+  $('#t-max').innerHTML=`${Math.round(T.max)}<small>km/h</small>`;
+  $('#t-cost').innerHTML=`${fmt(km*S.cons/100*S.price,2)}<small>€</small>`;
+  const left=S.breakMin>0?S.breakMin*60000-T.sinceBreak:null;
+  $('#t-break').textContent=left==null?'Off':left<=0?'Ora':dur(left);
+  const st=$('#t-state');st.className='pill '+(T.running?'live':'');st.lastElementChild.textContent=T.running?'In viaggio':T.elapsed?'In pausa':'Fermo';
+  const b=$('#t-toggle');b.textContent=T.running?'Metti in pausa':T.elapsed?'Riprendi':'Avvia viaggio';b.className='btn '+(T.running?'ghost':'green');
+  $('#h-trip').textContent=T.elapsed||T.running?`Viaggio ${fmt(km,1)} km · ${dur(T.elapsed)}`:'Viaggio non avviato';
+  $('#h-break').textContent=T.running&&left!=null?(left>0?`Pausa tra ${dur(left)}`:'Pausa consigliata'):'';
+}
+function updateCalc(){
+  const km=parseFloat(($('#calc-km').value||'').replace(',','.'));
+  $('#calc-res').textContent=km>0?fmt(km*S.cons/100*S.price,2)+' €':'— €';
+  $('#calc-note').textContent=`con ${fmt(S.cons,1)} l/100 km a ${fmt(S.price,2)} €/l · ${km>0?fmt(km*S.cons/100,1)+' litri':''}`;
+}
+function checkBreak(){
+  if(S.breakMin>0&&T.running&&T.sinceBreak>=S.breakMin*60000&&Date.now()>T.snooze&&$('#brk').hidden){
+    $('#brk-note').textContent=`Guidi da ${dur(T.sinceBreak)} ore. Fermati qualche minuto, bevi qualcosa e sgranchisci le gambe.`;
+    $('#brk').hidden=false;beep(880,3);
+  }
+}
+let lastSave=0;
+setInterval(()=>{
+  const now=Date.now();
+  if(T.running){const dt=Math.min(now-(T.lastTick||now),4*3600000);T.elapsed+=dt;T.sinceBreak+=dt;T.lastTick=now;checkBreak()}
+  const d=new Date();$('#clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes());
+  updateTrip();
+  if(G.t&&now-G.t>20000&&G.kmh){G.kmh=null;updateSpeed()}
+  if(now-lastSave>5000){saveTrip();lastSave=now}
+},1000);
+
+/* ---------- schermo acceso, suono ---------- */
+let wl=null,started=false;
+async function keepAwake(){started=true;try{if('wakeLock' in navigator&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}}catch(e){}}
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'){if(started)keepAwake();T.lastTick=T.lastTick||Date.now()}
+  else saveTrip();
+});
+let AC=null;
+function unlockAudio(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}}
+function beep(f=880,n=1){
+  if(!AC)return;
+  for(let k=0;k<n;k++){const t=AC.currentTime+k*.28,o=AC.createOscillator(),g=AC.createGain();
+    o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.35,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.22);
+    o.connect(g).connect(AC.destination);o.start(t);o.stop(t+.25)}
+}
+
+/* ---------- avvio ---------- */
+paintIcons(document);
+if(IOS&&!STANDALONE)$('#install-hint').hidden=false;
+renderAll();updateTrip();
+{const d=new Date();$('#clock').textContent=pad(d.getHours())+':'+pad(d.getMinutes())}
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>

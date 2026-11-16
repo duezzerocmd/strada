@@ -1,0 +1,16 @@
+{
+  "name": "Strada",
+  "short_name": "Strada",
+  "description": "Mappe, musica, messaggi e dati di viaggio in un'unica schermata per l'auto.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#06080b",
+  "theme_color": "#06080b",
+  "lang": "it",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
