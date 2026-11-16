@@ -1,5 +1,5 @@
 // Strada: funziona anche senza rete dopo la prima apertura.
-const CACHE = 'strada-v1';
+const CACHE = 'strada-v2';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {
